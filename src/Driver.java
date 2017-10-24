@@ -39,7 +39,7 @@ public class Driver {
                 if (building.getElevators()[0].isEmpty())
                     continue;
                 if (building.getElevators()[0].getCurrentFloor() > building.getElevators()[0].peek().getTargetFloor())
-                    building.getElevators()[0].previosFloor();
+                    building.getElevators()[0].previousFloor();
                 else
                     building.getElevators()[0].nextFloor();
             } while (!building.getElevators()[0].isEmpty());
@@ -50,7 +50,9 @@ public class Driver {
     }
 
     public static void eveningMode(Building building) {
-
+        //get 20 people on the second floor off and drop them off at the first floor
+        //get 20 people off the third floor and drop them off at the first floor
+        //repeat this: grabbing 20 people off the next floor
     }
 
     /**

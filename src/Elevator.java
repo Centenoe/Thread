@@ -48,7 +48,7 @@ public class Elevator {
         currentFloor++;
     }
 
-    public void previosFloor() {
+    public void previousFloor() {
         currentFloor--;
     }
 
