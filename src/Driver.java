@@ -50,9 +50,17 @@ public class Driver {
     }
 
     public static void eveningMode(Building building) {
+        while ()
         //get 20 people on the second floor off and drop them off at the first floor
         //get 20 people off the third floor and drop them off at the first floor
         //repeat this: grabbing 20 people off the next floor
+    }
+
+    public static boolean isFloorEmpty(Building building) {
+        boolean result = false;
+        for (int i = 0; i < building.getFloors().length; i++) {
+            if (building.getFloors()[i].)
+        }
     }
 
     /**
