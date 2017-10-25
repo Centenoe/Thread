@@ -43,24 +43,25 @@ public class Driver {
                 else
                     building.getElevators()[0].nextFloor();
             } while (!building.getElevators()[0].isEmpty());
-
-
         }
         System.out.println("The mean frustration level for the morning is: " + mean(frustrationLevels));
     }
 
     public static void eveningMode(Building building) {
-        while ()
+        while (isFloorsEmpty(building)) {
+            if (!)
+        }
         //get 20 people on the second floor off and drop them off at the first floor
         //get 20 people off the third floor and drop them off at the first floor
         //repeat this: grabbing 20 people off the next floor
     }
 
-    public static boolean isFloorEmpty(Building building) {
+    public static boolean isFloorsEmpty(Building building) {
         boolean result = false;
-        for (int i = 0; i < building.getFloors().length; i++) {
-            if (building.getFloors()[i].)
-        }
+        for (int i = 0; i < building.getFloors().length; i++)
+            if (building.getFloors()[i].isEmpty())
+                result = true;
+        return result;
     }
 
     /**
