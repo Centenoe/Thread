@@ -2,24 +2,27 @@ import java.util.ArrayList;
 
 public class Floor {
 
+    // --- Fields --- //
     private int floorNum;
     private final int numOfPeopleLivingOnFloor;
-    private ArrayList<Person> peopleCurrentOnFloor = new ArrayList<>();
-    private int top = 0;
+    private Queue<Person> peopleCurrentOnFloor = new Queue<>();
 
+    /**
+     * constructor that reprsents a floor in a building
+     * @param floorNum
+     * @param numOfPeopleLivingOnFloor
+     */
     public Floor(int floorNum, int numOfPeopleLivingOnFloor) {
         this.floorNum = floorNum;
         this.numOfPeopleLivingOnFloor = numOfPeopleLivingOnFloor;
     }
 
     public void personGetsOntoFloor(Person newPerson) {
-        this.peopleCurrentOnFloor.add(newPerson);
+        this.peopleCurrentOnFloor.enqueue(newPerson);
     }
 
     public Person personWantsOffFloor() {
-        Person personToRemove = peopleCurrentOnFloor.get(top);
-        peopleCurrentOnFloor.remove(top);
-        top++;
+        Person personToRemove = peopleCurrentOnFloor.dequeue();
         return personToRemove;
     }
 
@@ -29,9 +32,5 @@ public class Floor {
 
     public boolean isEmpty() {
         return peopleCurrentOnFloor.size() <= 0;
-    }
-
-    public int getTop() {
-        return this.top;
     }
 }

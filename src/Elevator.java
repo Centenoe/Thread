@@ -53,8 +53,10 @@ public class Elevator {
     }
 
     public boolean isEmpty() {
-        return numberOfPeople == 0;
+        return numberOfPeople <= 0;
     }
+
+    public boolean isFull() { return numberOfPeople >= 20; }
 
     public boolean checkInitialization(){
         if (initialized)
