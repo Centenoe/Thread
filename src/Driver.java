@@ -16,9 +16,20 @@ public class Driver {
     public static void main(String[] args) {
         Building building1 = new Building();
         ArrayList<Person> people = generatePeople();
-        mourningMode(building1, people);
+        for (Person person : people)
+            building1.getFloors()[0].personGetsOntoFloor(person);
+        people.clear();
+        mourningMode(building1);
         eveningMode(building1);
     }
+
+    /*
+    I did this lab a little differently than most would probably do it, but I still did the assignment.
+    The reason I did it this way is because I wanted the try doing it across multiple buildings, or more floors,
+    or more people, or more elevators.
+
+    I did the assignment in the first part of the code but then the second is the "for fun code".
+     */
 
     /**
      * this class represents the mourning mode of 1 building (the assignment).  Basically what this method does is
@@ -27,38 +38,37 @@ public class Driver {
      * the lobby.
      *
      * @param building this is the building that the mourning mode will be acting on
-     * @param people this is the list of people waiting in the lobby
      */
-    public static void mourningMode(Building building, ArrayList<Person> people) {
-        int peopleSize = people.size(), count = 0;
+    public static void mourningMode(Building building) {
+        int count = 0;
+        Elevator elevator = building.getElevators()[0];
+        Floor firstFloor = building.getFloors()[0];
         int[] frustrationLevels = new int[350];
-        while (people.size() > 0) {
-            if (peopleSize - 20 <= 0) {
-                peopleSize -= (peopleSize - 20);
-            }
-            while (people.size() > peopleSize - 20) {
-                building.getElevators()[0].push(people.get(people.size() - 1));
-                people.remove(people.size() - 1);
-            }
-            peopleSize -= 20;
 
-            do {
-                if (building.getElevators()[0].peek() != null) {
+        while (!firstFloor.isEmpty()) {
+
+            //put people on elevator
+            while (!firstFloor.isEmpty()) {
+                if (elevator.isFull())
+                    break;
+                elevator.push(firstFloor.personWantsOffFloor());
+            }
+
+            //get everyone off elevator
+            while (!elevator.isEmpty()) {
+                moveToCertainFloor(building, 1, elevator.peek().getTargetFloor());
+                if (elevator.peek() != null) {
                     if (checkIfPersonWantsOff(building, 1)) {
-                        Person person = building.getElevators()[0].pop();
-                        //System.out.println(person.toString());
+                        Person person = elevator.pop();
                         frustrationLevels[count] = person.getFrustrationLevel();
                         count += 1;
-                        building.getFloors()[building.getElevators()[0].getCurrentFloor() - 1].personGetsOntoFloor(person);
+                        person.setFrustrationLevel(0);
+                        building.getFloors()[elevator.getCurrentFloor()].personGetsOntoFloor(person);
                     }
                 }
-                if (building.getElevators()[0].isEmpty())
-                    continue;
-                if (building.getElevators()[0].getCurrentFloor() > building.getElevators()[0].peek().getTargetFloor())
-                    building.getElevators()[0].previousFloor();
-                else
-                    building.getElevators()[0].nextFloor();
-            } while (!building.getElevators()[0].isEmpty());
+                if (!firstFloor.isEmpty())
+                    firstFloor.incrementFrustration();
+            }
         }
         System.out.println("The mean frustration level for the morning is: " + mean(frustrationLevels));
     }
@@ -74,30 +84,56 @@ public class Driver {
      */
     public static void eveningMode(Building building) {
         Elevator elevator = building.getElevators()[0];
-        Floor currentFloor, previousFloor;
-        do {
-            //still need to make sure that the elevator is not going to the same floor
-            //still need frustration level
-            while (building.getFloors()[elevator.getCurrentFloor()].isEmpty()) { //make sure it works
-                if (elevator.getCurrentFloor() >= 5) {
-                    backToFirstFloor(building, 1);
-                    elevator.nextFloor();
-                } else
-                    elevator.nextFloor();
+        Floor previousFloor = building.getFloors()[elevator.getCurrentFloor()];
+        int[] frustrationLevels = new int[350];
+        int count = 0;
+
+        if (areFloorsEmpty(building))
+            throw new IllegalArgumentException("building is empty");
+        while (!areFloorsEmpty(building)) {
+            switch (previousFloor.getFloorNum()) {
+                case 0:
+                    previousFloor = moveToCertainFloor(building, 1, 1);
+                    break;
+                case 1:
+                    previousFloor = moveToCertainFloor(building, 1, 2);
+                    break;
+                case 2:
+                    previousFloor = moveToCertainFloor(building, 1, 3);
+                    break;
+                case 3:
+                    previousFloor = moveToCertainFloor(building, 1, 4);
+                    break;
+                case 4:
+                    previousFloor = moveToCertainFloor(building, 1, 1);
+                    break;
             }
-            currentFloor = building.getFloors()[elevator.getCurrentFloor()];
-            previousFloor = currentFloor;
-            while (!currentFloor.isEmpty()) {
+
+            while (!previousFloor.isEmpty()) {
                 if (elevator.isFull())
                     break;
-                elevator.push(currentFloor.personWantsOffFloor());
+                Person person = previousFloor.personWantsOffFloor();
+                frustrationLevels[count] = person.getFrustrationLevel();
+                count++;
+                person.setFrustrationLevel(0);
+                elevator.push(person);
             }
-            currentFloor = backToFirstFloor(building, 1);
+
+            //go back to first floor and let everyone off
+            moveToCertainFloor(building, 1, 0);
             while (!elevator.isEmpty()) {
-                currentFloor.personGetsOntoFloor(elevator.pop());
-                //System.out.println(currentFloor.getNumOfPeopleCurrentOnFloor());
+                building.getFloors()[0].personGetsOntoFloor(elevator.pop());
             }
-        } while (!areFloorsEmpty(building));
+
+            //increment everyone else's frustration level
+            for (Floor floor : building.getFloors()) {
+                if (!floor.isEmpty())
+                    floor.incrementFrustration();
+            }
+        }
+        System.out.println(building.getFloors()[0].getNumOfPeopleCurrentOnFloor());
+        System.out.println("The mean frustration level for the eventing is: " + mean(frustrationLevels));
+
     }
 
     /**
@@ -113,16 +149,21 @@ public class Driver {
     }
 
     /**
-     * sends the given elevator to the first floor
+     * sends the given elevator to the given floor
      *
      * @param building the building that holds the elevator
      * @return the floor that the elevator is currently on (will be 1)
      */
-    public static Floor backToFirstFloor(Building building, int elevatorNum) {
-        while (building.getElevators()[elevatorNum - 1].getCurrentFloor() > 1) {
-            building.getElevators()[elevatorNum - 1].previousFloor();
+    private static Floor moveToCertainFloor(Building building, int elevatorNum, int floorNum) {
+        Elevator elevator = building.getElevators()[elevatorNum - 1];
+        while (elevator.getCurrentFloor() != floorNum) {
+            if (elevator.getCurrentFloor() > floorNum) {
+                elevator.previousFloor();
+            } else {
+                elevator.nextFloor();
+            }
         }
-        return building.getFloors()[0];
+        return building.getFloors()[floorNum];
     }
 
     /**
@@ -131,7 +172,7 @@ public class Driver {
      * @param building the current building instance
      * @return true if all the floors are empty otherwise false
      */
-    public static boolean areFloorsEmpty(Building building) {
+    private static boolean areFloorsEmpty(Building building) {
         boolean result = true;
         for (int i = 1; i < building.getFloors().length; i++) {
             if (!building.getFloors()[i].isEmpty())
@@ -145,7 +186,7 @@ public class Driver {
      *
      * @param array frustration levels
      */
-    public static double mean(int[] array) {
+    private static double mean(int[] array) {
 
         int count = 0, sum = 0;
         while (count < array.length) {
@@ -160,29 +201,35 @@ public class Driver {
      *
      * @return an array list of random people
      */
-    public static ArrayList<Person> generatePeople() {
+    private static ArrayList<Person> generatePeople() {
         ArrayList<Person> result = new ArrayList<>();
         int index = 0;
         while (index < 100) {
-            result.add(new Person(index, 2));
+            result.add(new Person(index, 1));
             index++;
         }
         
         while (index < 165) {
-            result.add(new Person(index, 3));
+            result.add(new Person(index, 2));
             index++;
         }
         
         while (index < 240) {
-            result.add(new Person(index, 4));
+            result.add(new Person(index, 3));
             index++;
         }
         
         while (index < 350) {
-            result.add(new Person(index, 5));
+            result.add(new Person(index, 4));
             index++;
         }
         Collections.shuffle(result);
         return result;
+    }
+
+    //fun code
+
+    public static void funCode() {
+        //have'nt pushed this code yet
     }
 }

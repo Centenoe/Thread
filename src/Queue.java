@@ -2,7 +2,6 @@ import java.lang.reflect.Array;
 
 /**
  * @author Joe Matteson
- * @author Edgar Centeno
  *
  * This is a queue class that represents a queue.
  * @param <T> The type of Queue.
